@@ -29,36 +29,39 @@ export const Route = createFileRoute("/")({
   component: OrbidocApp,
 });
 
+const STAGE_TO_STEP = { 1: 1, 2: 2, 3: 3, 4: 3, 5: 4, 6: 5, 7: 6 };
+const STEP_TO_STAGE = { 1: 1, 2: 2, 3: 3, 4: 5, 5: 6, 6: 7 };
+
 function OrbidocApp() {
-  const [step, setStep] = useState(1);
-  const [maxStep, setMaxStep] = useState(1);
+  const [stage, setStage] = useState(1);
+  const [maxStage, setMaxStage] = useState(1);
   const [demoMode, setDemoMode] = useState(true);
   const [file, setFile] = useState(null);
 
   const go = (next) => {
-    setStep(next);
-    setMaxStep((m) => Math.max(m, next));
+    setStage(next);
+    setMaxStage((m) => Math.max(m, next));
   };
 
   const reset = () => {
     setFile(null);
-    setMaxStep(1);
-    setStep(1);
+    setMaxStage(1);
+    setStage(1);
   };
 
   return (
     <div className="min-h-screen font-sans text-foreground">
       <Starfield />
       <TopBar
-        step={step}
-        maxStep={maxStep}
-        onStep={setStep}
+        step={STAGE_TO_STEP[stage]}
+        maxStep={STAGE_TO_STEP[maxStage]}
+        onStep={(s) => setStage(STEP_TO_STAGE[s])}
         demoMode={demoMode}
         onToggleDemo={() => setDemoMode((d) => !d)}
       />
 
       <main>
-        {step === 1 ? (
+        {stage === 1 ? (
           <Home
             onUpload={() => go(2)}
             onLoadSample={() => {
@@ -68,15 +71,14 @@ function OrbidocApp() {
             }}
           />
         ) : null}
-        {step === 2 ? <Scanner file={file} onFile={setFile} onComplete={() => go(3)} /> : null}
-        {step === 3 ? <DocumentDna demoMode={demoMode} file={file} onNext={() => go(4)} /> : null}
-        {step === 4 ? <StructureIntelligence onNext={() => go(5)} /> : null}
-        {step === 5 ? <OrbitEngine onComplete={() => go(6)} /> : null}
-        {step === 6 && maxStep === 6 ? <Verification onNext={() => go(7)} /> : null}
-        {step >= 7 || (step === 6 && maxStep > 6) ? (
-          maxStep >= 7 && step >= 6 ? <PublicationReady file={file} onReset={reset} /> : null
-        ) : null}
+        {stage === 2 ? <Scanner file={file} onFile={setFile} onComplete={() => go(3)} /> : null}
+        {stage === 3 ? <DocumentDna demoMode={demoMode} file={file} onNext={() => go(4)} /> : null}
+        {stage === 4 ? <StructureIntelligence onNext={() => go(5)} /> : null}
+        {stage === 5 ? <OrbitEngine onComplete={() => go(6)} /> : null}
+        {stage === 6 ? <Verification onNext={() => go(7)} /> : null}
+        {stage === 7 ? <PublicationReady file={file} onReset={reset} /> : null}
       </main>
+
 
       <footer className="border-t border-border/50 px-5 py-8 text-center font-mono text-[11px] text-muted-foreground">
         ORBiDOC · offline local processing · no cloud AI · ready to pair with a local Python engine
