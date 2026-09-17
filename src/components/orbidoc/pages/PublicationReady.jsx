@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { buildPublicationBlob, demoService, downloadBlob } from "@/lib/demoService";
+import { formatDocx } from "@/lib/docxFormatter";
 import { Chip, GlassCard, OrbitButton, SectionTitle } from "../ui";
 
 export default function PublicationReady({ file, onReset }) {
@@ -7,8 +8,18 @@ export default function PublicationReady({ file, onReset }) {
   const integrity = demoService.getIntegrity();
   const name = (file?.name ?? "manuscript.docx").replace(/\.docx$/i, "");
 
+  const [error, setError] = useState("");
+
   const download = () => {
-    downloadBlob(buildPublicationBlob(name), `${name} — ORBiDOC publication ready.docx`);
+    setError("");
+    try {
+      const blob = file?.bytes
+        ? formatDocx(file.bytes).blob // the author's own document, re-styled
+        : buildPublicationBlob(name); // sample manuscript demo output
+      downloadBlob(blob, `${name} — ORBiDOC publication ready.docx`);
+    } catch {
+      setError("The document could not be formatted. Please re-upload the .docx and try again.");
+    }
   };
 
   return (
@@ -27,8 +38,15 @@ export default function PublicationReady({ file, onReset }) {
         </div>
         <p className="mt-5 font-mono text-sm">{name}.docx</p>
         <p className="text-xs text-muted-foreground">
+          {file?.bytes
+            ? "Your uploaded manuscript with the publication specification applied to every paragraph, heading and caption."
+            : "Sample manuscript — upload your own .docx to format your content."}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
           Times New Roman 12pt · justified · 1.5 spacing · 1.27cm indent · 1.52/1.97cm margins · gutter left
         </p>
+        {error ? <p className="mt-4 text-xs text-destructive">{error}</p> : null}
+
         <div className="mt-6 flex flex-wrap gap-3">
           <OrbitButton onClick={download}>Download publication-ready .docx</OrbitButton>
           <OrbitButton variant="ghost" onClick={() => setShowCert(true)}>

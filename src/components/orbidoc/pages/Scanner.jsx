@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { demoService } from "@/lib/demoService";
+import { analyzeDocx } from "@/lib/docxFormatter";
 import { Chip, GlassCard, Meter, OrbitButton, SectionTitle } from "../ui";
 
 export default function Scanner({ file, onFile, onComplete }) {
@@ -8,9 +9,12 @@ export default function Scanner({ file, onFile, onComplete }) {
   const [running, setRunning] = useState(false);
   const inputRef = useRef(null);
 
-  const pick = (f) => {
+  const [error, setError] = useState("");
+
+  const pick = async (f) => {
     if (!f) return;
-    onFile({
+    setError("");
+    const base = {
       name: f.name,
       sizeLabel: `${(f.size / 1048576).toFixed(1)} MB`,
       pages: "—",
@@ -18,7 +22,22 @@ export default function Scanner({ file, onFile, onComplete }) {
       characters: "—",
       createdBy: "Local file",
       lastModified: new Date(f.lastModified).toISOString().slice(0, 10),
-    });
+    };
+    try {
+      const bytes = await f.arrayBuffer();
+      const analysis = analyzeDocx(bytes);
+      onFile({
+        ...base,
+        bytes,
+        analysis,
+        pages: analysis.pages,
+        words: analysis.words,
+        characters: analysis.characters,
+      });
+    } catch {
+      setError("That file could not be read as a .docx package. Please choose a Word .docx file.");
+      onFile(base);
+    }
   };
 
   const scan = async () => {
@@ -59,6 +78,8 @@ export default function Scanner({ file, onFile, onComplete }) {
               onChange={(e) => pick(e.target.files?.[0])}
             />
           </div>
+
+          {error ? <p className="mt-4 text-xs text-destructive">{error}</p> : null}
 
           {file ? (
             <div className="mt-5 space-y-2 font-mono text-xs">
