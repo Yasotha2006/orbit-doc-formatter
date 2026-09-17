@@ -8,9 +8,12 @@ export default function Scanner({ file, onFile, onComplete }) {
   const [running, setRunning] = useState(false);
   const inputRef = useRef(null);
 
-  const pick = (f) => {
+  const [error, setError] = useState("");
+
+  const pick = async (f) => {
     if (!f) return;
-    onFile({
+    setError("");
+    const base = {
       name: f.name,
       sizeLabel: `${(f.size / 1048576).toFixed(1)} MB`,
       pages: "—",
@@ -18,7 +21,22 @@ export default function Scanner({ file, onFile, onComplete }) {
       characters: "—",
       createdBy: "Local file",
       lastModified: new Date(f.lastModified).toISOString().slice(0, 10),
-    });
+    };
+    try {
+      const bytes = await f.arrayBuffer();
+      const analysis = analyzeDocx(bytes);
+      onFile({
+        ...base,
+        bytes,
+        analysis,
+        pages: analysis.pages,
+        words: analysis.words,
+        characters: analysis.characters,
+      });
+    } catch {
+      setError("That file could not be read as a .docx package. Please choose a Word .docx file.");
+      onFile(base);
+    }
   };
 
   const scan = async () => {
