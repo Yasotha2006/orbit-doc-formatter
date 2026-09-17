@@ -7,7 +7,8 @@ export const STEPS = [
   { id: 3, label: "Understand" },
   { id: 4, label: "Format" },
   { id: 5, label: "Verify" },
-  { id: 6, label: "Export" },
+  { id: 6, label: "Research Integrity" },
+  { id: 7, label: "Export" },
 ];
 
 export default function TopBar({ step, maxStep, onStep, demoMode, onToggleDemo }) {
