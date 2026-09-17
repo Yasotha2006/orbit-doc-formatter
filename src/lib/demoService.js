@@ -133,8 +133,22 @@ export const demoService = {
   },
 };
 
-// Word-readable document generated fully client-side (no cloud, no upload).
+// Real OOXML .docx generated fully client-side (no cloud, no upload).
 export function buildPublicationBlob(fileName) {
+  const title = fileName.replace(/\.docx$/i, "");
+  return buildDocx(title, [
+    { text: title, style: "Heading1" },
+    { text: "Formatted by ORBiDOC Orbit Engine — offline local processing, no cloud AI." },
+    { text: "1. Publication Specification Applied", style: "Heading2" },
+    {
+      text: "Times New Roman 12pt, justified, 1.5 line spacing, 1.27cm first-line indent, margins 1.52cm top and bottom, 1.97cm left and right, gutter left, Heading 1 at 16pt bold.",
+    },
+    { text: "Figure 1: Structure preserved at 100% content integrity.", style: "Caption" },
+  ]);
+}
+
+// Legacy HTML preview builder (kept for reference; not used for export).
+export function buildPublicationHtml(fileName) {
   const title = fileName.replace(/\.docx$/i, "");
   const html = `<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">
 <style>
