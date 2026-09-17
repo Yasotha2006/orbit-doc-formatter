@@ -11,6 +11,7 @@ import {
   FORMAT_SPEC,
   FORMAT_STAGES,
   INTEGRITY,
+  PRECHECK,
   SCAN_PHASES,
 } from "./demoData";
 
@@ -20,6 +21,7 @@ export const ENGINE_ENDPOINTS = {
   classify: "/api/engine/classify",
   format: "/api/engine/format",
   verify: "/api/engine/verify",
+  precheck: "/api/engine/precheck",
   export: "/api/engine/export",
 };
 
@@ -35,6 +37,92 @@ export const demoService = {
   getFormatStages: () => FORMAT_STAGES,
   getIntegrity: () => INTEGRITY,
   getCrossRefs: () => CROSS_REFS,
+
+  // Returns the pre-check report. When a local engine is connected this should
+  // call ENGINE_ENDPOINTS.precheck; until then the demo report is returned and
+  // flagged with source: "demo" so the UI never presents it as real analysis.
+  getPrecheck: () => PRECHECK,
+
+  // Derives the checklist + issue list from a pre-check report plus the
+  // existing Cross-Reference Guardian and Lost Element Detector results.
+  buildPrecheckSummary(report = PRECHECK) {
+    const refs = CROSS_REFS.map((r) => ({
+      ...r,
+      status: r.status === "resolved" ? "pass" : "review",
+    }));
+
+    const worst = (items) => (items.some((i) => i.status === "fail") ? "fail" : items.some((i) => i.status === "review") ? "review" : "pass");
+    const headings = report.formatting.filter((f) => f.label.startsWith("Heading"));
+    const captions = report.placement.filter((p) => /caption/i.test(p.checks.join(" ")));
+
+    const checklist = [
+      { label: "Formatting consistency", status: worst(report.formatting) },
+      { label: "Heading hierarchy", status: worst(headings) },
+      { label: "Figure placement", status: worst(report.placement.filter((p) => /figure/i.test(p.label))) },
+      { label: "Table placement", status: worst(report.placement.filter((p) => /table/i.test(p.label))) },
+      { label: "Caption consistency", status: worst(captions) },
+      { label: "Cross-reference validation", status: worst(refs) },
+      { label: "Content preservation", status: report.content.status },
+      { label: "Element preservation", status: worst(report.preservation) },
+    ];
+
+    const issues = [];
+    report.formatting
+      .filter((f) => f.status !== "pass")
+      .forEach((f) =>
+        issues.push({
+          kind: "Formatting Issue",
+          detail: `${f.label}: ${f.note}`,
+          location: f.page ? `Page ${f.page}` : "Document-wide",
+          action: "Review formatting",
+          status: f.status,
+        }),
+      );
+    refs
+      .filter((r) => r.status !== "pass")
+      .forEach((r) =>
+        issues.push({
+          kind: "Cross-Reference Issue",
+          detail: `"${r.ref}" is referenced but the corresponding object could not be found.`,
+          location: r.target,
+          action: "Review reference",
+          status: r.status,
+        }),
+      );
+    report.placement
+      .filter((p) => p.status !== "pass")
+      .forEach((p) =>
+        issues.push({
+          kind: "Layout Issue",
+          detail: `${p.label}: ${p.checks[p.checks.length - 1]}.`,
+          location: p.page ? `Page ${p.page}` : "Unknown page",
+          action: "Review placement",
+          status: p.status,
+        }),
+      );
+    report.preservation
+      .filter((p) => p.status !== "pass")
+      .forEach((p) =>
+        issues.push({
+          kind: "Element Issue",
+          detail: `${p.label} could not be confirmed as preserved.`,
+          location: "Document-wide",
+          action: "Review element",
+          status: p.status,
+        }),
+      );
+    if (report.content.status !== "pass") {
+      issues.push({
+        kind: "Content Difference",
+        detail: report.content.note,
+        location: "Document-wide",
+        action: "Review content",
+        status: report.content.status,
+      });
+    }
+
+    return { report, refs, checklist, issues };
+  },
 
   async runPhases(items, onStep, stepMs = 620) {
     for (let i = 0; i < items.length; i += 1) {
