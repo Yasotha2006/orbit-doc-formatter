@@ -144,3 +144,50 @@ export const CROSS_REFS = [
   { ref: "Figure 7.4", target: "No matching caption found in manuscript", status: "missing" },
   { ref: "Equation 4.7", target: "Ch. 4 — Consensus latency bound", status: "resolved" },
 ];
+
+// ---- Research Integrity Pre-Check ----------------------------------------
+// Shape mirrors the response of the local engine's /api/engine/precheck call.
+// status: "pass" | "review" | "fail"
+
+export const PRECHECK = {
+  source: "demo",
+  formatting: [
+    { label: "Font family", expected: "Times New Roman", status: "pass", note: "Consistent across 1284 paragraphs" },
+    { label: "Body font size", expected: "12 pt", status: "review", note: "3 paragraphs differ (10.5 pt)", page: 7 },
+    { label: "Alignment", expected: "Justified", status: "pass", note: "Consistent" },
+    { label: "Line spacing", expected: "1.5 lines", status: "pass", note: "Consistent" },
+    { label: "First-line indent", expected: "1.27 cm", status: "pass", note: "Consistent" },
+    { label: "Heading 1", expected: "TNR 16 pt bold", status: "pass", note: "8 of 8 chapters match" },
+    { label: "Heading 2", expected: "TNR 14 pt bold", status: "pass", note: "34 of 34 subheadings match" },
+    { label: "Page margins", expected: "1.52 / 1.97 cm, gutter left", status: "pass", note: "Applied to all sections" },
+    { label: "Column layout", expected: "Single column", status: "pass", note: "No multi-column sections" },
+  ],
+  placement: [
+    { label: "Figure 1", checks: ["Figure detected", "Caption detected", "Associated correctly"], status: "pass" },
+    { label: "Figure 2.1", checks: ["Figure detected", "Caption detected", "Associated correctly"], status: "pass" },
+    { label: "Table 3.2", checks: ["Table detected", "Caption above table", "Associated correctly"], status: "pass" },
+    {
+      label: "Figure 4",
+      checks: ["Caption detected", "Associated figure could not be verified"],
+      status: "review",
+      page: 18,
+    },
+    { label: "Table 6.1", checks: ["Table detected", "Caption detected", "Associated correctly"], status: "pass" },
+  ],
+  preservation: [
+    { label: "Title", status: "pass" },
+    { label: "Author information", status: "pass" },
+    { label: "Chapters", status: "pass" },
+    { label: "Subheadings", status: "pass" },
+    { label: "Paragraphs", status: "pass" },
+    { label: "Tables", status: "pass" },
+    { label: "Figures", status: "pass" },
+    { label: "Captions", status: "pass" },
+    { label: "References", status: "pass" },
+    { label: "Lists", status: "pass" },
+  ],
+  content: {
+    status: "pass",
+    note: "Before/after content hash match — no text, table, caption or reference difference detected.",
+  },
+};
