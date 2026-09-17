@@ -16,7 +16,7 @@ export default function PublicationReady({ file, onReset }) {
       <SectionTitle
         eyebrow="Milestone"
         title="Publication Orbit Reached"
-        subtitle="Your manuscript is formatted to specification with verified content integrity — generated entirely on this machine."
+        subtitle="ORBiDOC doesn't rewrite your research. It understands your document, formats it, checks it, and prepares it for publication."
       />
 
       <GlassCard className="mx-auto max-w-2xl text-left">
