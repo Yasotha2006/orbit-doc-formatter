@@ -2,6 +2,7 @@
 // Every function here maps 1:1 to a future REST endpoint served by the
 // local Python engine (default http://127.0.0.1:8765).
 
+import { buildDocx } from "./docxBuilder";
 import {
   CLASSIFICATIONS,
   CONSTELLATION,
