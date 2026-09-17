@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { demoService } from "@/lib/demoService";
+import { analyzeDocx } from "@/lib/docxFormatter";
 import { Chip, GlassCard, Meter, OrbitButton, SectionTitle } from "../ui";
 
 export default function Scanner({ file, onFile, onComplete }) {
@@ -77,6 +78,8 @@ export default function Scanner({ file, onFile, onComplete }) {
               onChange={(e) => pick(e.target.files?.[0])}
             />
           </div>
+
+          {error ? <p className="mt-4 text-xs text-destructive">{error}</p> : null}
 
           {file ? (
             <div className="mt-5 space-y-2 font-mono text-xs">
