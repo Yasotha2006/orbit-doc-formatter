@@ -8,6 +8,7 @@ import DocumentDna from "@/components/orbidoc/pages/DocumentDna";
 import StructureIntelligence from "@/components/orbidoc/pages/StructureIntelligence";
 import OrbitEngine from "@/components/orbidoc/pages/OrbitEngine";
 import Verification from "@/components/orbidoc/pages/Verification";
+import ResearchIntegrity from "@/components/orbidoc/pages/ResearchIntegrity";
 import PublicationReady from "@/components/orbidoc/pages/PublicationReady";
 import { demoService } from "@/lib/demoService";
 
@@ -29,8 +30,8 @@ export const Route = createFileRoute("/")({
   component: OrbidocApp,
 });
 
-const STAGE_TO_STEP = { 1: 1, 2: 2, 3: 3, 4: 3, 5: 4, 6: 5, 7: 6 };
-const STEP_TO_STAGE = { 1: 1, 2: 2, 3: 3, 4: 5, 5: 6, 6: 7 };
+const STAGE_TO_STEP = { 1: 1, 2: 2, 3: 3, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7 };
+const STEP_TO_STAGE = { 1: 1, 2: 2, 3: 3, 4: 5, 5: 6, 6: 7, 7: 8 };
 
 function OrbidocApp() {
   const [stage, setStage] = useState(1);
@@ -76,7 +77,8 @@ function OrbidocApp() {
         {stage === 4 ? <StructureIntelligence onNext={() => go(5)} /> : null}
         {stage === 5 ? <OrbitEngine onComplete={() => go(6)} /> : null}
         {stage === 6 ? <Verification onNext={() => go(7)} /> : null}
-        {stage === 7 ? <PublicationReady file={file} onReset={reset} /> : null}
+        {stage === 7 ? <ResearchIntegrity demoMode={demoMode} onNext={() => go(8)} /> : null}
+        {stage === 8 ? <PublicationReady file={file} onReset={reset} /> : null}
       </main>
 
 
